@@ -5,9 +5,7 @@ float SLVehicle::GetSpeed()
 {
 	if (!Exists()) return 0;
 
-	float speed = ENTITY::GET_ENTITY_SPEED(vehicle);
-	float metersPerHour = speed * 3600;
-	return metersPerHour / (float)1609.344;
+	return ENTITY::GET_ENTITY_SPEED(vehicle);
 }
 
 void SLVehicle::MaxSpeed(const float maxSpeed)
@@ -21,7 +19,7 @@ void SLVehicle::MaxSpeed(const float maxSpeed)
 
 bool SLVehicle::Exists()
 {
-	return ENTITY::DOES_ENTITY_EXIST(vehicle);
+	return ENTITY::DOES_ENTITY_EXIST(vehicle) == TRUE ? true : false;
 }
 bool SLVehicle::IsAlive()
 {

@@ -50,9 +50,6 @@ vector<SLVehicle> vehicles;
 bool modEnabled;
 
 
-
-
-
 void Update()
 {
 	if (timer.TimeElapsed())
@@ -74,7 +71,7 @@ void KeyEvent()
 
 			for (int i = 0; i < vehicles.size(); i++)
 			{
-				if (vehicles[i].GetVehicleInstance() == curVehicle.GetVehicleInstance())
+				if (vehicles[i].Instance() == curVehicle.Instance())
 				{
 					vehicles[i].MaxSpeed(FLT_MAX);
 					vehicles.erase(vehicles.begin() + i);
@@ -99,8 +96,8 @@ void KeyEvent()
 		{
 			SLVehicle curVehicle = PED::GET_VEHICLE_PED_IS_IN(playerPed, false);
 
-			for (auto & vehicle : vehicles)
-				if (vehicle.GetVehicleInstance() == curVehicle.GetVehicleInstance())
+			for (SLVehicle & vehicle : vehicles)
+				if (vehicle.Instance() == curVehicle.Instance())
 				{
 					vehicle.MaxSpeed(vehicle.MaxSpeed() + 1);
 					// Print
@@ -124,7 +121,11 @@ void KeyEvent()
 
 void CleanupVehicleVec()
 {
-
+	for (int i(0); i < vehicles.size(); i++)
+	{
+		if (!vehicles[i].Exists())
+			vehicles.erase(vehicles.begin()+i);
+	}
 }
 
 bool Initialize()

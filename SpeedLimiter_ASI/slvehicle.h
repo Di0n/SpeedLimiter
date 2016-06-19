@@ -5,16 +5,21 @@
 class SLVehicle
 {
 public:
-	SLVehicle(const Vehicle vehicle) { Set(vehicle); }
+	SLVehicle(const Vehicle vehicle) { this->vehicle = vehicle; }
 	~SLVehicle() {}
 
-	Vehicle GetVehicleInstance() { return vehicle; }
-	void Set(const Vehicle vehicle) { this->vehicle = vehicle; }
+	Vehicle Instance() { return vehicle; }
+
 	float GetSpeed();
+
 	float MaxSpeed() { return maxSpeed; }
+
 	void MaxSpeed(const float maxSpeed);
+
 	bool IsAlive();
+
 	bool Exists();
+
 	int Health();
 private:
 	Vehicle vehicle;
