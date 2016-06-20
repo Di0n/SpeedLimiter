@@ -2,6 +2,7 @@
 #include "keyboard.h"
 #include "timer.h"
 #include "slvehicle.h"
+#include "inifile.h"
 
 #include <string>
 #include <vector>
@@ -10,16 +11,15 @@ using std::string;
 using std::vector;
 
 bool Initialize();
-void KeyEvent();
-void Update();
-void CleanupVehicleVec();
+void KeyEvent(), Update(), CleanupVehicleVec();
+void LimitSpeedKey_Pressed(), AddSpeedKey_Pressed(), SubtractSpeedKey_Pressed(), ToggleModKey_Pressed();
 
 struct Keys
 {
 	DWORD limitSpeedKey;
 	DWORD addSpeedKey;
 	DWORD subtractSpeedKey;
-	DWORD enableModKey;
+	DWORD toggleModKey;
 };
 
 struct GUI
@@ -48,6 +48,7 @@ Timer timer;
 Keys keys;
 vector<SLVehicle> vehicles;
 bool modEnabled;
+string unit;
 
 
 void Update()
@@ -55,68 +56,95 @@ void Update()
 	if (timer.TimeElapsed())
 	{
 		CleanupVehicleVec();
-		timer.SetNow(500000);
+		timer.SetNow(500);
 	}
 }
 
 void KeyEvent()
 {
+	if (IsKeyJustUp(keys.limitSpeedKey))
+		LimitSpeedKey_Pressed();
+
+	if (IsKeyJustUp(keys.addSpeedKey))
+		AddSpeedKey_Pressed();
+
+	if (IsKeyJustUp(keys.subtractSpeedKey))
+		SubtractSpeedKey_Pressed();
+
+	if (IsKeyJustUp(keys.toggleModKey))
+		ToggleModKey_Pressed();
+}
+
+void LimitSpeedKey_Pressed()
+{
 	Ped playerPed = PLAYER::PLAYER_PED_ID();
 
-	if (IsKeyJustUp(keys.limitSpeedKey))
+	if (PED::IS_PED_IN_ANY_VEHICLE(playerPed, false) && !PED::IS_PED_DEAD_OR_DYING(playerPed, 1))
 	{
-		if (PED::IS_PED_IN_ANY_VEHICLE(playerPed, false) && !PED::IS_PED_DEAD_OR_DYING(playerPed, 1))
-		{
-			SLVehicle curVehicle = PED::GET_VEHICLE_PED_IS_IN(playerPed, false);
+		SLVehicle curVehicle = PED::GET_VEHICLE_PED_IS_IN(playerPed, false);
 
-			for (int i = 0; i < vehicles.size(); i++)
+		for (int i = 0; i < vehicles.size(); i++)
+		{
+			if (vehicles[i].Instance() == curVehicle.Instance())
 			{
-				if (vehicles[i].Instance() == curVehicle.Instance())
-				{
-					vehicles[i].MaxSpeed(FLT_MAX);
-					vehicles.erase(vehicles.begin() + i);
-					GUI::ShowSubtitle("Removed Limiter", 2000);
-					return;
-				}
+				vehicles[i].MaxSpeed(FLT_MAX);
+				vehicles.erase(vehicles.begin() + i);
+				GUI::ShowSubtitle("Removed Limiter", 2000);
+				return;
 			}
-
-			SLVehicle vehicle = curVehicle;
-			vehicle.MaxSpeed(vehicle.GetSpeed());
-			vehicles.push_back(vehicle);
 		}
 
-		else
-			GUI::ShowNotification("~r~You are currently not in a vehicle!");
-
+		SLVehicle vehicle = curVehicle;
+		vehicle.MaxSpeed(vehicle.GetSpeed());
+		vehicles.push_back(vehicle);
 	}
 
-	else if (IsKeyJustUp(keys.addSpeedKey))
+	else
+		GUI::ShowNotification("You are currently ~r~not~s~ in a vehicle!");
+}
+
+void AddSpeedKey_Pressed()
+{
+	Ped playerPed = PLAYER::PLAYER_PED_ID();
+
+	if (PED::IS_PED_IN_ANY_VEHICLE(playerPed, false) && !PED::IS_PED_DEAD_OR_DYING(playerPed, 1))
 	{
-		if (PED::IS_PED_IN_ANY_VEHICLE(playerPed, false) && !PED::IS_PED_DEAD_OR_DYING(playerPed, 1))
-		{
-			SLVehicle curVehicle = PED::GET_VEHICLE_PED_IS_IN(playerPed, false);
+		SLVehicle curVehicle = PED::GET_VEHICLE_PED_IS_IN(playerPed, false);
 
-			for (SLVehicle & vehicle : vehicles)
-				if (vehicle.Instance() == curVehicle.Instance())
-				{
-					vehicle.MaxSpeed(vehicle.MaxSpeed() + 1);
-					// Print
-				}
-		}
-		else
-			GUI::ShowNotification("You are currently not in a vehicle!");
+		for (SLVehicle & vehicle : vehicles)
+			if (vehicle.Instance() == curVehicle.Instance())
+			{
+				if (vehicle.MaxSpeed() + 1 > FLT_MAX) return;
+				vehicle.MaxSpeed(vehicle.MaxSpeed() + 1);
+				GUI::ShowSubtitle("Limiting speed to: ~b~" + std::to_string(unit == "MPH" ? vehicle.MaxSpeedMph() : vehicle.MaxSpeedKmh()) + "~s~ " + unit, 2000);
+			}
 	}
+	else
+		GUI::ShowNotification("You are currently ~r~not~s~ in a vehicle!");
+}
 
-	else if (IsKeyJustUp(keys.subtractSpeedKey))
+void SubtractSpeedKey_Pressed()
+{
+	Ped playerPed = PLAYER::PLAYER_PED_ID();
+
+	if (PED::IS_PED_IN_ANY_VEHICLE(playerPed, false) && !PED::IS_PED_DEAD_OR_DYING(playerPed, 1))
 	{
+		SLVehicle curVehicle = PED::GET_VEHICLE_PED_IS_IN(playerPed, false);
 
+		for (SLVehicle & vehicle : vehicles)
+			if (vehicle.Instance() == curVehicle.Instance())
+			{
+				if (vehicle.MaxSpeed() - 1 < 0) return;
+				vehicle.MaxSpeed(vehicle.MaxSpeed() - 1);
+			}
 	}
+}
 
-	if (IsKeyJustUp(keys.enableModKey))
-	{
-
-	}
-
+void ToggleModKey_Pressed()
+{
+	modEnabled = !modEnabled;
+	const string status = modEnabled ? "Enabled" : "Disabled";
+	GUI::ShowNotification(status + " ~b~SpeedLimiter.asi~s~");
 }
 
 void CleanupVehicleVec()
@@ -124,7 +152,7 @@ void CleanupVehicleVec()
 	for (int i(0); i < vehicles.size(); i++)
 	{
 		if (!vehicles[i].Exists())
-			vehicles.erase(vehicles.begin()+i);
+			vehicles.erase(vehicles.begin() + i);
 	}
 }
 
@@ -132,10 +160,23 @@ bool Initialize()
 {
 	modEnabled = true;
 
-	keys.enableModKey = VK_ACCEPT;
-	keys.addSpeedKey = VK_F1;
-	keys.limitSpeedKey = VK_F2;
-	keys.subtractSpeedKey = VK_F3;
+	try
+	{
+		IniFile ini = "./speedlimiter.ini";
+		keys.toggleModKey = ini.ReadInt("KEYS", "ENABLE_MOD", VK_PRIOR); // Page UP
+		keys.limitSpeedKey = ini.ReadInt("KEYS", "TOGGLE_LIMITER", 0x38); // 8
+		keys.addSpeedKey = ini.ReadInt("KEYS", "ADD_SPEED", 0x39); // 9
+		keys.subtractSpeedKey = ini.ReadInt("KEYS", "SUBTRACT_SPEED", 0x30); // 0
+		unit = ini.ReadString("UNIT", "SPEED_UNIT", "KMH");
+		for (char & c : unit) toupper(c);
+	}
+	catch (...)
+	{
+		GUI::ShowNotification("~b~SpeedLimiter~s~ failed to load ini file!");
+		return false;
+	}
+
+	GUI::ShowNotification("~b~SpeedLimiter~s~ successfully loaded!");
 	return true;
 }
 

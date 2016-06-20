@@ -25,11 +25,13 @@
     <ClInclude Include="keyboard.h" />
     <ClInclude Include="timer.h" />
     <ClInclude Include="slvehicle.h" />
+    <ClInclude Include="inifile.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="script.cpp" />
     <ClCompile Include="keyboard.cpp" />
     <ClCompile Include="slvehicle.cpp" />
+    <ClCompile Include="inifile.cpp" />
   </ItemGroup>
 </Project>

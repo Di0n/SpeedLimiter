@@ -24,12 +24,14 @@
     <ClInclude Include="..\inc\nativeCaller.h" />
     <ClInclude Include="..\inc\natives.h" />
     <ClInclude Include="..\inc\types.h" />
+    <ClInclude Include="inifile.h" />
     <ClInclude Include="keyboard.h" />
     <ClInclude Include="script.h" />
     <ClInclude Include="slvehicle.h" />
     <ClInclude Include="timer.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="inifile.cpp" />
     <ClCompile Include="keyboard.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="script.cpp" />

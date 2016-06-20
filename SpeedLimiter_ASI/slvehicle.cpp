@@ -11,6 +11,7 @@ float SLVehicle::GetSpeed()
 void SLVehicle::MaxSpeed(const float maxSpeed)
 {
 	if (!Exists()) return;
+	if (maxSpeed < 0) return;
 
 	this->maxSpeed = maxSpeed;
 	VEHICLE::_SET_VEHICLE_ENGINE_TORQUE_MULTIPLIER(vehicle, 2); // ?
@@ -24,8 +25,8 @@ bool SLVehicle::Exists()
 bool SLVehicle::IsAlive()
 {
 	if (!Exists()) return false;
-	
-	return !ENTITY::IS_ENTITY_DEAD(vehicle);
+
+	return ENTITY::IS_ENTITY_DEAD(vehicle) == FALSE ? true : false;
 }
 
 int SLVehicle::Health()
