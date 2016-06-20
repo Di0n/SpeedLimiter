@@ -22,7 +22,7 @@ struct Keys
 	DWORD toggleModKey;
 };
 
-struct GUI
+struct Message
 {
 	static void ShowSubtitle(const string& text, const int duration)
 	{
@@ -89,7 +89,7 @@ void LimitSpeedKey_Pressed()
 			{
 				vehicles[i].MaxSpeed(FLT_MAX);
 				vehicles.erase(vehicles.begin() + i);
-				GUI::ShowSubtitle("Removed Limiter", 2000);
+				Message::ShowSubtitle("Removed Limiter.", 2000);
 				return;
 			}
 		}
@@ -97,10 +97,12 @@ void LimitSpeedKey_Pressed()
 		SLVehicle vehicle = curVehicle;
 		vehicle.MaxSpeed(vehicle.GetSpeed());
 		vehicles.push_back(vehicle);
+
+		Message::ShowSubtitle("Limiter set.", 2000);
 	}
 
 	else
-		GUI::ShowNotification("You are currently ~r~not~s~ in a vehicle!");
+		Message::ShowNotification("You are currently ~r~not~s~ in a vehicle!");
 }
 
 void AddSpeedKey_Pressed()
@@ -116,11 +118,12 @@ void AddSpeedKey_Pressed()
 			{
 				if (vehicle.MaxSpeed() + 1 > FLT_MAX) return;
 				vehicle.MaxSpeed(vehicle.MaxSpeed() + 1);
-				GUI::ShowSubtitle("Limiting speed to: ~b~" + std::to_string(unit == "MPH" ? vehicle.MaxSpeedMph() : vehicle.MaxSpeedKmh()) + "~s~ " + unit, 2000);
+
+				Message::ShowSubtitle("Limiting speed to: ~b~" + std::to_string(unit == "MPH" ? vehicle.MaxSpeedMph() : vehicle.MaxSpeedKmh()) + "~s~ " + unit, 2000);
 			}
 	}
 	else
-		GUI::ShowNotification("You are currently ~r~not~s~ in a vehicle!");
+		Message::ShowNotification("You are currently ~r~not~s~ in a vehicle!");
 }
 
 void SubtractSpeedKey_Pressed()
@@ -136,6 +139,8 @@ void SubtractSpeedKey_Pressed()
 			{
 				if (vehicle.MaxSpeed() - 1 < 0) return;
 				vehicle.MaxSpeed(vehicle.MaxSpeed() - 1);
+
+				Message::ShowSubtitle("Limiting speed to: ~b~" + std::to_string(unit == "MPH" ? vehicle.MaxSpeedMph() : vehicle.MaxSpeedKmh()) + "~s~ " + unit, 2000);
 			}
 	}
 }
@@ -144,7 +149,7 @@ void ToggleModKey_Pressed()
 {
 	modEnabled = !modEnabled;
 	const string status = modEnabled ? "Enabled" : "Disabled";
-	GUI::ShowNotification(status + " ~b~SpeedLimiter.asi~s~");
+	Message::ShowNotification(status + " ~b~SpeedLimiter.asi~s~");
 }
 
 void CleanupVehicleVec()
@@ -172,11 +177,11 @@ bool Initialize()
 	}
 	catch (...)
 	{
-		GUI::ShowNotification("~b~SpeedLimiter~s~ failed to load ini file!");
+		Message::ShowNotification("~b~SpeedLimiter~s~ failed to load ini file!");
 		return false;
 	}
 
-	GUI::ShowNotification("~b~SpeedLimiter~s~ successfully loaded!");
+	Message::ShowNotification("~b~SpeedLimiter~s~ successfully loaded!");
 	return true;
 }
 
