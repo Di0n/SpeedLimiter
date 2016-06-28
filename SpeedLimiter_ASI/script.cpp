@@ -156,7 +156,7 @@ void CleanupVehicleVec()
 {
 	for (int i(0); i < vehicles.size(); i++)
 	{
-		if (!vehicles[i].Exists())
+		if (!vehicles[i].Exists() || !vehicles[i].IsAlive())
 			vehicles.erase(vehicles.begin() + i);
 	}
 }
